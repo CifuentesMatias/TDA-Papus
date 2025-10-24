@@ -30,5 +30,7 @@ typedef struct{
 //declaro mis funciones
 
 void decodificarFecha(char *periodo);
+void reescribirFecha(char *fechaNum);
+int mi_atoi(char *cadena);
 
 #endif // DESARROLLO_H_INCLUDED
