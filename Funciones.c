@@ -126,7 +126,7 @@ double calcularMontoAjustado(Vector *vec) //punto 5
     double monto, indiceDesde, indiceHasta, montoAjustado, variacion;
     int opcion;
     char region[10];
-    char periodoDesde[7], periodoHasta[7];
+    char periodoDesde[20], periodoHasta[20];
     //pido monto al usuario
     printf("Ingrese el monto inicial(en pesos):");
     scanf("%lf", &monto);
@@ -147,15 +147,12 @@ double calcularMontoAjustado(Vector *vec) //punto 5
         case 6: strcpy(region, "Noreste"); break;
         case 7: strcpy(region, "Patagonia"); break;
     }
-
     printf("\nIngrese el periodo desde (formato AAAAMM): ");
-    fflush(stdin);
     scanf("%6s", periodoDesde);
-//    reescribirFecha(periodoDesde);
+    reescribirFecha(periodoDesde);
     printf("Ingrese el periodo hasta (formato AAAAMM): ");
-    fflush(stdin);
     scanf("%6s", periodoHasta);
-//    reescribirFecha(periodoHasta);
+    reescribirFecha(periodoHasta);
 
     indiceDesde = -1;
     indiceHasta = -1;
@@ -166,9 +163,15 @@ double calcularMontoAjustado(Vector *vec) //punto 5
         if(strcmp(dato->Descripcion,"Nivel general")==0 && strcmp(dato->region,region)==0)
         {
             if(strcmp(dato->Periodo_codificado, periodoDesde)==0)
+            {
                 indiceDesde=dato->Indice_ipc;
+            }
             else if(strcmp(dato->Periodo_codificado,periodoHasta)==0)
+            {
                 indiceHasta=dato->Indice_ipc;
+            }
+            if(indiceDesde != -1 && indiceHasta != -1)
+                break; // ya encontramos ambos
         }
     }
 
@@ -178,9 +181,17 @@ double calcularMontoAjustado(Vector *vec) //punto 5
     }
 
     montoAjustado=monto*(indiceHasta/indiceDesde);
-    variacion=(indiceHasta/(indiceDesde-1))*100;
+    variacion=((indiceHasta/indiceDesde)-1)*100;
     system("cls");
-    printf("\nRegion: %s\nPeriodo desde: %s\tIndice desde: %.2f\nPeriodo hasta: %s\tIndice hasta: %.2f\nMonto inicial: $%.2lf\nMonto ajustado: $%.2lf\nVariacion(porcentual): %.2lf", region, periodoDesde, indiceDesde, periodoHasta, indiceHasta, monto, montoAjustado, variacion);
+    printf("\nRegion: %s", region);
+    printf("\nPeriodo desde: %s", periodoDesde);
+    printf("\tIndice desde: %.2lf", indiceDesde);
+    printf("\nPeriodo hasta: %s", periodoHasta);
+    printf("\tIndice hasta: %.2f", indiceHasta);
+    printf("\nMonto inicial: $%.2lf", monto);
+    printf("\nMonto ajustado: $%.2lf", montoAjustado);
+    printf("\nVariacion(porcentual): %.2lf", variacion);
+    puts("%");
 
     return montoAjustado;
 }
@@ -201,7 +212,8 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
     if(!aux) return ERROR;
     strcpy(divi->Periodo_codificado, aux + 1);
     *aux = '\0';
-
+    decodificarFecha(divi->Periodo_codificado);
+    reescribirFecha(divi->Periodo_codificado);
     aux = strrchr(linea, ';');
     if(!aux) return ERROR;
     strcpy(divi->region, aux + 1);
@@ -219,7 +231,14 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
 
     aux = strrchr(linea, ';');
     if(!aux) return ERROR;
-    sscanf(aux + 1, "%lf", &divi->Indice_ipc);
+
+    char temp[17];                // 16 caracteres + 1 para '\0'
+    strncpy(temp, aux + 1, 16);   // copia máximo 16 caracteres
+    temp[16] = '\0';              // aseguramos terminador nulo
+    comaAPunto(temp);             // reemplaza ',' por '.'
+    sscanf(temp, "%lf", &divi->Indice_ipc);
+
+//    sscanf(aux + 1, "%lf", &divi->Indice_ipc);
     *aux = '\0';
 
     aux = strrchr(linea, ';');
@@ -231,7 +250,7 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
     if(!aux) return ERROR;
     strcpy(divi->Descripcion, aux + 1);
     *aux = '\0';
-
+    normalizarDescripcion(divi->Descripcion);
     strcpy(divi->Codigo, linea);
 
     return OK;
@@ -245,12 +264,14 @@ int bajarArchivoAVector(char *nombre, Vector *vec, cmp Comparar)
         return ERROR;
 
     char linea[LONGFILE];
-    if(!fgets(linea, LONGFILE, pf))
+    if(!fgets(linea, LONGFILE, pf))//reviento la primera linea
         return ERROR;
+
     while(leoTxtDivisiones(pf,&reg)==OK)
     {
         insertarVecEnOrd(vec,&reg,Comparar);//COMO ES GENERICO NECESITAMOS UNA FUNCION DE COMPARACION
     }
+    printf("13104=%d\n",vec->ce);
     fclose(pf);
     return OK;
 }
@@ -259,7 +280,10 @@ int cmpCod(const void*a, const void*b)
 {
     Tdivisiones reg1=*(Tdivisiones*)a; //CASTEO A PUNTERO DE ESTRUCTURA Y REG1 LE PONGO EL CONTENIDO DE ESE PUNTERO
     Tdivisiones reg2=*(Tdivisiones*)b;
-    return strcmp(reg1.Codigo,reg2.Codigo);
+    int check=strcmp(reg1.Codigo,reg2.Codigo);
+    if(check!=0)
+        return check;
+    return strcmp(reg1.Periodo_codificado,reg2.Periodo_codificado);
 }
 
 void recorrerVector(Vector *vec, Accion accion, void *datosAccion)
@@ -306,14 +330,14 @@ int  insertarVecEnOrd(Vector *vec , const void *elem ,cmp cmp)
    while(act<=ult && (comparo=cmp(act,elem))<0) //funcion de comparacion para el generico
        act += vec->tamElem;
 
-    if(act<=ult && comparo==0)
-        return ERROR;
+//    if(act<=ult && comparo==0)
+//        return ERROR;
 
    /// Puede que salga del while porque llego al ultimo o
    memmove(act+vec->tamElem , act , ult - act + vec->tamElem);
    memcpy(act,elem,vec->tamElem);
 
-   vec->ce++;
+   vec->ce=vec->ce+1;
    return OK;
 }
 
