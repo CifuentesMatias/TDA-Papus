@@ -1,5 +1,23 @@
 #include "Desarrollo.h"
 
+void eliminarComillas(char*linea)
+{
+    char *aux;
+    while(*linea)
+    {
+        if(*linea == '"')
+        {
+            aux = linea;
+            while(*aux)
+            {
+                *aux = *(aux+1);
+                aux++;
+            }
+        }
+        linea++;
+    }
+}
+
 void decodificarFecha(char *periodo) //punto 1
 {
     char *aux=periodo;//auxiliar con el contenido de las posiciones en "periodo"
@@ -115,7 +133,7 @@ double calcularMontoAjustado(Vector *vec) //punto 5
 
     do
     {
-        printf("\nSeleccione la region:\n 1. Nacional\n 2. GBA\n 3. Pampeana\n 4. Cuyo\n 5. Noroeste\n 6. Noreste\n 7. Patagonia\n");
+        printf("\nSeleccione la region:\n 1. Nacional\n 2. GBA\n 3. Pampeana\n 4. Cuyo\n 5. Noroeste\n 6. Noreste\n 7. Patagonia\n ");
         scanf("%d", &opcion);
     }while(opcion<1 || opcion>7);
 
@@ -131,11 +149,16 @@ double calcularMontoAjustado(Vector *vec) //punto 5
     }
 
     printf("\nIngrese el periodo desde (formato AAAAMM): ");
+    fflush(stdin);
     scanf("%6s", periodoDesde);
-    reescribirFecha(periodoDesde);
+//    reescribirFecha(periodoDesde);
     printf("Ingrese el periodo hasta (formato AAAAMM): ");
+    fflush(stdin);
     scanf("%6s", periodoHasta);
-    reescribirFecha(periodoHasta);
+//    reescribirFecha(periodoHasta);
+
+    indiceDesde = -1;
+    indiceHasta = -1;
 
     for(int i=0;i<vec->ce;i++)
     {
@@ -147,6 +170,11 @@ double calcularMontoAjustado(Vector *vec) //punto 5
             else if(strcmp(dato->Periodo_codificado,periodoHasta)==0)
                 indiceHasta=dato->Indice_ipc;
         }
+    }
+
+    if(indiceDesde == -1 || indiceHasta == -1) {
+        printf("No se encontraron los indices para los periodos ingresados.\n");
+        return ERROR;
     }
 
     montoAjustado=monto*(indiceHasta/indiceDesde);
@@ -164,20 +192,19 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
 
     if(!fgets(linea, LONGFILE, pt))
         return ERROR;
-
+    eliminarComillas(linea);
     aux = strchr(linea, '\n');
     if(aux)
         *aux = '\0';
 
     aux = strrchr(linea, ';');
-    printf("%s",aux);
     if(!aux) return ERROR;
-    sscanf(aux + 1, "%s", divi->Periodo_codificado);
+    strcpy(divi->Periodo_codificado, aux + 1);
     *aux = '\0';
 
     aux = strrchr(linea, ';');
     if(!aux) return ERROR;
-    sscanf(aux + 1, "%s", divi->region);
+    strcpy(divi->region, aux + 1);
     *aux = '\0';
 
     aux = strrchr(linea, ';');
@@ -197,15 +224,15 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
 
     aux = strrchr(linea, ';');
     if(!aux) return ERROR;
-    sscanf(aux + 1, "%s", divi->Clasificador);
+    strcpy(divi->Clasificador, aux + 1);
     *aux = '\0';
 
     aux = strrchr(linea, ';');
     if(!aux) return ERROR;
-    sscanf(aux + 1, "%s", divi->Descripcion);
+    strcpy(divi->Descripcion, aux + 1);
     *aux = '\0';
 
-    sscanf(linea, "%s", divi->Codigo);
+    strcpy(divi->Codigo, linea);
 
     return OK;
 }
@@ -217,6 +244,9 @@ int bajarArchivoAVector(char *nombre, Vector *vec, cmp Comparar)
     if(!pf)
         return ERROR;
 
+    char linea[LONGFILE];
+    if(!fgets(linea, LONGFILE, pf))
+        return ERROR;
     while(leoTxtDivisiones(pf,&reg)==OK)
     {
         insertarVecEnOrd(vec,&reg,Comparar);//COMO ES GENERICO NECESITAMOS UNA FUNCION DE COMPARACION
@@ -261,7 +291,7 @@ int  insertarVecEnOrd(Vector *vec , const void *elem ,cmp cmp)
     //SI ESTA LLENO RE ASIGNA MEMORIA
     if(vec->cap == vec->ce)
     {
-        int *aux;
+        void *aux;
         int ncap=vec->cap*2;
         aux = realloc(vec->vec, vec->tamElem * ncap);
         if(!aux)

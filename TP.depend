@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1761367458 source:c:\users\matuc\desktop\universidad\topicardos\tp\funciones.c
+1761372062 source:c:\users\matuc\desktop\universidad\topicardos\tp\funciones.c
 	"Desarrollo.h"
 
-1761366578 c:\users\matuc\desktop\universidad\topicardos\tp\desarrollo.h
+1761370045 c:\users\matuc\desktop\universidad\topicardos\tp\desarrollo.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

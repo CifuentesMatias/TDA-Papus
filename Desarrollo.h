@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define LONGFILE 100
+#define LONGFILE 150
 #define ERROR 1
 #define OK 0
 
@@ -61,5 +61,6 @@ int mi_atoi(char *cadena);
 void normalizarDescripcion(char *cadena);
 void comaAPunto(char *cadena);
 double calcularMontoAjustado(Vector *vec);
+void eliminarComillas(char*linea);
 
 #endif // DESARROLLO_H_INCLUDED
