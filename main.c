@@ -1,14 +1,12 @@
 #include "Desarrollo.h"
-
+//PUNTOS QUE ANDAN BIEN, BIEN A PELO = {(1),(2),(3),(4)}
 int main()
 {
-    char fecha[]="201604";
-    reescribirFecha(fecha);
-    printf("%s",fecha);
-//    Vector vec;
-//    crearVector(&vec,sizeof(Tdivisiones),50);
-//    bajarArchivoAVector("serie_ipc_divisiones.csv",&vec,cmpCod);
+    Vector vec;
+    crearVector(&vec,sizeof(Tdivisiones),50);
+    bajarArchivoAVector("serie_ipc_divisiones.csv",&vec,cmpCod);
 //    recorrerVector(&vec,mostrarCliente,NULL);
-//    destruirVector(&vec);
+    calcularMontoAjustado(&vec);
+    destruirVector(&vec);
     return 0;
 }

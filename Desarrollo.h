@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #define LONGFILE 100
+#define ERROR 1
+#define OK 0
 
 //declaro mis estructuras para los archivos
 
@@ -15,7 +17,7 @@ typedef struct{
     double v_m_ipc;
     double v_i_a_IPC;
     char region[10];
-    char Periodo_codificado[7];
+    char Periodo_codificado[20];
 }Tdivisiones;
 
 typedef struct{
@@ -37,18 +39,17 @@ typedef struct
     size_t tamElem;
     int ce;
     int cap;
-} Vector;
+}Vector;
 
 typedef int (*cmp)(const void*, const void*);
 typedef void(*Accion)(const void *,const void *);
 
 int cmpCod(const void*a, const void*b);
-void mostrarCliente(const void*a, const void*b);
 int  crearVector(Vector * vec, size_t tamElem , int cap);
 int  insertarVecEnOrd(Vector *vec , const void *elem ,cmp cmp);
-void mostrar(Vector *vec);
 void recorrerVector(Vector *vec, Accion accion, void *datosAccion);
 void destruirVector(Vector * vec);
+
 int bajarArchivoAVector(char *nombre, Vector *vec, cmp Comparar);
 
 //declaro mis funciones
@@ -57,5 +58,8 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi);
 void decodificarFecha(char *periodo);
 void reescribirFecha(char *fechaNum);
 int mi_atoi(char *cadena);
+void normalizarDescripcion(char *cadena);
+void comaAPunto(char *cadena);
+double calcularMontoAjustado(Vector *vec);
 
 #endif // DESARROLLO_H_INCLUDED
