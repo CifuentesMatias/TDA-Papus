@@ -154,6 +154,7 @@ double calcularMontoAjustado(Vector *vec) //punto 5
     scanf("%6s", periodoHasta);
     reescribirFecha(periodoHasta);
 
+    //inicializo los indices para que no explote despues si no lo encuentra, además de tener una validacion de busqueda
     indiceDesde = -1;
     indiceHasta = -1;
 
@@ -181,13 +182,18 @@ double calcularMontoAjustado(Vector *vec) //punto 5
     }
 
     montoAjustado=monto*(indiceHasta/indiceDesde);
-    variacion=((indiceHasta/indiceDesde)-1)*100;
+    variacion=((indiceHasta/indiceDesde)-1)*100;//PREGUNTAR SI EL PARENTESIS ESTA BIEN O ES (indiceHasta/indiceDesde-1) * 100
+
     system("cls");
+    puts("##################################\nAjuste por indice de precios (IPC)\n##################################");
     printf("\nRegion: %s", region);
+    puts("\n----------------------------------");
     printf("\nPeriodo desde: %s", periodoDesde);
-    printf("\tIndice desde: %.2lf", indiceDesde);
+    printf("\nIndice desde: %.2lf", indiceDesde);
+    puts("\n----------------------------------");
     printf("\nPeriodo hasta: %s", periodoHasta);
-    printf("\tIndice hasta: %.2f", indiceHasta);
+    printf("\nIndice hasta: %.2f", indiceHasta);
+    puts("\n----------------------------------");
     printf("\nMonto inicial: $%.2lf", monto);
     printf("\nMonto ajustado: $%.2lf", montoAjustado);
     printf("\nVariacion(porcentual): %.2lf", variacion);
@@ -195,6 +201,26 @@ double calcularMontoAjustado(Vector *vec) //punto 5
 
     return montoAjustado;
 }
+
+void convertirFecha(char *Aniomes) // "202510" → "2025-10-01"
+{
+    char *aux=Aniomes+6;
+    *aux++='-';
+    *aux++='0';
+    *aux++='1';
+    *aux='\0';
+
+    char *fin = aux;
+    char *mes=Aniomes+4;
+
+    while(fin>=mes)
+    {
+        *(fin+1)=*fin;
+        fin--;
+    }
+    *(mes)='-'; // pongo el '-' entre año y mes
+}
+
 
 int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
 {
@@ -233,7 +259,7 @@ int leoTxtDivisiones(FILE *pt, Tdivisiones *divi)
     if(!aux) return ERROR;
 
     char temp[17];                // 16 caracteres + 1 para '\0'
-    strncpy(temp, aux + 1, 16);   // copia m�ximo 16 caracteres
+    strncpy(temp, aux + 1, 16);   // copia máximo 16 caracteres
     temp[16] = '\0';              // aseguramos terminador nulo
     comaAPunto(temp);             // reemplaza ',' por '.'
     sscanf(temp, "%lf", &divi->Indice_ipc);
@@ -271,7 +297,7 @@ int bajarArchivoAVector(char *nombre, Vector *vec, cmp Comparar)
     {
         insertarVecEnOrd(vec,&reg,Comparar);//COMO ES GENERICO NECESITAMOS UNA FUNCION DE COMPARACION
     }
-    printf("13104=%d\n",vec->ce);
+//    printf("13104=%d\n",vec->ce); //CONTROL DE CARGAS DEL VECTOR (13104 ESPERADO)
     fclose(pf);
     return OK;
 }

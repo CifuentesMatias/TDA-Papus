@@ -24,12 +24,24 @@ typedef struct{
     char Codigo[21];
     char Descripcion_aperturas[31];
     char Clasificador[31];
-    char Periodo[7];
+    char Periodo[20];
     double Indice_ipc;//accede con %lf
     double v_m_ipc;
     double v_i_a_IPC;
     char region[10];
 }Taperturas;
+
+
+//struct punto 6
+typedef struct
+{
+    char Fecha[15];
+    char Descripcion[31];
+    char Periodo[7];
+    double Indice_IPC;
+    char Region[10];
+    char Grupo[11];
+} Tanalisis_IPC;
 
 //bajar archivo a vectorgaming
 
@@ -62,5 +74,6 @@ void normalizarDescripcion(char *cadena);
 void comaAPunto(char *cadena);
 double calcularMontoAjustado(Vector *vec);
 void eliminarComillas(char*linea);
+void convertirFecha(char *Aniomes);
 
 #endif // DESARROLLO_H_INCLUDED
